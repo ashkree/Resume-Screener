@@ -1,2 +1,3 @@
 # Resume-Screener
-# Author @haneen
+Author @haneen
+Author @maveron
