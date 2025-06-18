@@ -6,7 +6,8 @@ from .BaseModel import BaseModel
 
 class RandomForestModel(BaseModel):
     """
-    Random Forest model with Bayesian optimization support
+    Simple Random Forest model definition
+    Parameter spaces handled externally by ModelTrainer
     """
     
     def __init__(self, **kwargs):
@@ -15,30 +16,28 @@ class RandomForestModel(BaseModel):
     def _create_model(self, **params) -> RandomForestClassifier:
         """Create Random Forest model with specified parameters"""
         default_params = {
-            'n_estimators': kwargs.get('n_estimators', 200),
-            'max_depth':   kwargs.get('max_depth', 10),          # cap depth
-            'min_samples_leaf': kwargs.get('min_samples_leaf', 5),
-            'max_features':     kwargs.get('max_features', 'sqrt'),
-            'bootstrap':        True,
-            'oob_score':        True,                            # enable OOB
-            'random_state':     kwargs.get('random_state', 42),
+            'n_estimators': 100,
+            'max_depth': None,
+            'min_samples_leaf': 1,
+            'min_samples_split': 2,
+            'max_features': 'sqrt',
+            'bootstrap': True,
+            'oob_score': True,
+            'random_state': 42,
         }
         
-        # Update with provided parameters
-        default_params.update(params)
-        default_params.update(self.config)
+        # Merge: defaults <- config (from init) <- runtime params
+        final_params = {**default_params, **self.config, **params}
         
-        return RandomForestClassifier(**default_params)
+        return RandomForestClassifier(**final_params)
     
-    def get_param_space(self) -> Dict[str, Any]:
-        """Define parameter space for Bayesian optimization"""
-        return {
-            'n_estimators': (50, 300),           # Integer range
-            'max_depth': (3, 30),                # Integer range (None handled separately)
-            'min_samples_split': (2, 20),        # Integer range
-            'min_samples_leaf': (1, 10),         # Integer range
-            'max_features': ['sqrt', 'log2', 0.3, 0.5, 0.7],  # Categorical + float
-        }
+    def get_oob_score(self):
+        """Get out-of-bag score if available"""
+        if not self.is_fitted:
+            return None
+        if hasattr(self.model, 'oob_score_'):
+            return self.model.oob_score_
+        return None
     
     def get_detailed_importance(self):
         """Get detailed feature importance analysis"""
@@ -54,6 +53,21 @@ class RandomForestModel(BaseModel):
             'mean_importance': importance.mean(),
             'std_importance': importance.std(),
             'top_features_count': np.sum(importance > importance.mean()),
-            'importance_concentration': np.sum(importance[:10]) / np.sum(importance)  # Top 10 concentration
+            'importance_concentration': np.sum(importance[:10]) / np.sum(importance),
+            'oob_score': self.get_oob_score()
         }
-
+    
+    def get_model_specific_info(self) -> Dict[str, Any]:
+        """Get Random Forest specific information"""
+        info = self.get_model_info()
+        
+        if self.is_fitted:
+            info.update({
+                'n_trees': getattr(self.model, 'n_estimators', None),
+                'oob_score': self.get_oob_score(),
+                'feature_importance_available': self.get_feature_importance() is not None,
+                'n_features': getattr(self.model, 'n_features_in_', None),
+                'n_classes': getattr(self.model, 'n_classes_', None)
+            })
+        
+        return info
