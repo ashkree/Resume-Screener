@@ -38,9 +38,9 @@ class SimpleScaler:
         return X_train_scaled, X_val_scaled
 
 # Usage examples for your notebook:
-
+"""
 def experiment_with_scaling():
-    """Example of how to use scaling in experiments"""
+
     
     # Option 1: No scaling (for comparison)
     print("🧪 Experiment 1: No Scaling")
@@ -58,7 +58,7 @@ def experiment_with_scaling():
     return lr_no_scale, lr_scaled
 
 def quick_scaling_comparison(X_train, X_val, y_train, y_val, trainer):
-    """Quick function to compare scaled vs unscaled"""
+
     
     results = {}
     
@@ -133,3 +133,4 @@ lr_feature_selection_space = {
 
 print("✅ Minimal LogisticRegressionModel and scaling utilities ready!")
 print("📝 Copy the parameter spaces above for your experiments")
+"""
