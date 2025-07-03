@@ -159,6 +159,7 @@ class TextPreprocessor:
     def process_dataset(
         self,
         df,
+        clean_text: bool = False,
         remove_stop_words: bool = False,
         lemmatize: bool = False,
         text_cols: Iterable[str] = ('resume_text', 'job_description_text'),
@@ -166,9 +167,14 @@ class TextPreprocessor:
 
         df_clean = df.copy()
 
-        steps = [self.clean_text]
+        steps = []
+        
+        if clean_text:
+            steps.append(self.clean_text)
+
         if remove_stop_words:
             steps.append(self.remove_stop_words)
+
         if lemmatize:
             steps.append(self.lemmatize_text)
 
