@@ -3,6 +3,8 @@ from .data_loader import load_test_data, load_train_val_data
 from .SimpleScaler import SimpleScaler
 from .ModelTrainer import ModelTrainer
 from .ModelEvaluator import ModelEvaluator
+from .ExperimentManger import ExperimentManager, Experiment
+from .ModelVisualiser import ModelVisualiser
 
 __all__ = [
     "ModelTrainer",
@@ -10,5 +12,8 @@ __all__ = [
     "SimpleScaler",
     "load_train_val_data",
     "load_test_data",
-    "TextPreprocessor"
+    "TextPreprocessor",
+    "ExperimentManager",
+    "Experiment",
+    "ModelVisualiser"
 ]

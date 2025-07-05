@@ -1,265 +1,108 @@
-import time
-import pickle
-import os
-from typing import Any, Dict, Optional
+import optuna
 import numpy as np
-from sklearn.model_selection import cross_val_score, StratifiedKFold
-from sklearn.metrics import accuracy_score
-
-# Optuna for Bayesian optimization
-try:
-    import optuna
-    from optuna.samplers import TPESampler
-    from optuna.pruners import MedianPruner
-    OPTUNA_AVAILABLE = True
-except ImportError:
-    print("⚠️ Optuna not installed. Install with: pip install optuna")
-    OPTUNA_AVAILABLE = False
+from sklearn.model_selection import StratifiedKFold
 
 class ModelTrainer:
-    """
-    Clean model trainer focused on training and hyperparameter optimization
-    """
-    
-    def __init__(
-        self,
-        cv_folds: int = 5,
-        scoring: str = 'f1_weighted',
-        n_trials: int = 50,
-        random_state: int = 42,
-        verbose: bool = True
-    ):
+    def __init__(self, pipeline_factory, param_space=None, n_trials=20, cv_folds=5,
+                 scoring='accuracy', random_state=42):
+        """
+        Parameters:
+        - pipeline_factory: callable that accepts a param dict and returns a pipeline (e.g. sklearn Pipeline)
+        - param_space: callable defining the Optuna hyperparameter space (trial -> dict)
+        - n_trials: number of optimisation trials
+        - cv_folds: number of Stratified K-Fold splits
+        - scoring: metric to optimise
+        - random_state: seed for reproducibility
+        """
+        self.pipeline_factory = pipeline_factory
+        self.param_space = param_space
+        self.n_trials = n_trials
         self.cv_folds = cv_folds
         self.scoring = scoring
-        self.n_trials = n_trials
         self.random_state = random_state
-        self.verbose = verbose
-        
-        # CV strategy
-        self.cv_strategy = StratifiedKFold(
-            n_splits=cv_folds,
-            shuffle=True,
-            random_state=random_state
-        )
-        
-        # Training history
-        self.training_history = {}
-        
-        # Configure Optuna logging
-        if OPTUNA_AVAILABLE:
-            optuna.logging.set_verbosity(
-                optuna.logging.INFO if verbose else optuna.logging.WARNING
-            )
-    
-    def _create_objective_function(self, model, X, y, param_space):
-        """Create Optuna objective function"""
+
+        self.best_pipeline = None
+        self.best_score = None
+        self.best_params = None
+        self.training_history = []
+
+    def train(self, X, y, optimise=False):
+        """
+        Train the model using standard fit or Optuna-based optimisation with cross-validation.
+        Returns the best fitted pipeline.
+        """
+        self.training_history = []
+
+        # Keep data in original format (don't convert to numpy arrays)
+        # The pipeline should handle the conversion internally
+
+        if not optimise or self.param_space is None:
+            # Simple training with default parameters
+            pipeline = self.pipeline_factory({})
+            pipeline.fit(X, y)
+            self.best_pipeline = pipeline
+            self.best_score = pipeline.score(X, y)
+            self.best_params = {}
+            return self.best_pipeline
+
+        # Define Optuna objective
         def objective(trial):
-            try:
-                # Sample parameters from space
-                params = {}
-                for name, spec in param_space.items():
-                    if isinstance(spec, tuple) and len(spec) == 2:
-                        low, high = spec
-                        if isinstance(low, int) and isinstance(high, int):
-                            params[name] = trial.suggest_int(name, low, high)
-                        else:
-                            params[name] = trial.suggest_float(name, low, high)
-                    elif isinstance(spec, list):
-                        params[name] = trial.suggest_categorical(name, spec)
-                    else:
-                        raise ValueError(f"Invalid parameter spec for {name}: {spec}")
+            params = self.param_space(trial)
+            pipeline = self.pipeline_factory(params)
+
+            skf = StratifiedKFold(n_splits=self.cv_folds, shuffle=True, random_state=self.random_state)
+            fold_scores = []
+
+            # Convert y to numpy array for indexing in cross-validation
+            y_array = y.values if hasattr(y, 'values') else y
+
+            for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y_array)):
+                # Use iloc for pandas DataFrames, direct indexing for numpy arrays
+                if hasattr(X, 'iloc'):
+                    X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
+                else:
+                    X_train, X_val = X[train_idx], X[val_idx]
                 
-                # Create model instance and run CV
-                model_instance = model._create_model(**params)
-                cv_scores = cross_val_score(
-                    model_instance, X, y,
-                    cv=self.cv_strategy,
-                    scoring=self.scoring,
-                    n_jobs=-1
-                )
-                
-                return cv_scores.mean()
-                
-            except Exception as e:
-                if self.verbose:
-                    print(f"   Trial failed: {e}")
-                # Return poor score for failed trials
-                return 0.0 if 'accuracy' in self.scoring or 'f1' in self.scoring else float('inf')
+                if hasattr(y, 'iloc'):
+                    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+                else:
+                    y_train, y_val = y[train_idx], y[val_idx]
+
+                pipeline.fit(X_train, y_train)
+                score = pipeline.score(X_val, y_val)
+                fold_scores.append(score)
+
+            trial_result = {
+                "trial_number": trial.number,
+                "params": params,
+                "fold_scores": fold_scores,
+                "mean_score": np.mean(fold_scores)
+            }
+
+            self.training_history.append(trial_result)
+            return trial_result["mean_score"]
+
+        # Run optimisation
+        study = optuna.create_study(direction="maximize")
+        study.optimize(objective, n_trials=self.n_trials)
+
+        # Final best model - need to construct params properly for pipeline factory
+        best_params = study.best_params
         
-        return objective
-    
-    def optimize_hyperparameters(
-        self,
-        model,
-        X,
-        y,
-        param_space: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Run Bayesian hyperparameter optimization"""
-        
-        if not OPTUNA_AVAILABLE:
-            print("⚠️ Optuna not available. Skipping optimization.")
-            return {'best_params': {}, 'best_score': None}
-        
-        if self.verbose:
-            print(f"🔍 Optimizing {model.name} hyperparameters...")
-        
-        # Create study
-        direction = 'maximize' if any(m in self.scoring for m in ['accuracy', 'f1', 'precision', 'recall']) else 'minimize'
-        study = optuna.create_study(
-            direction=direction,
-            sampler=TPESampler(seed=self.random_state),
-            pruner=MedianPruner()
-        )
-        
-        # Optimize
-        objective = self._create_objective_function(model, X, y, param_space)
-        start_time = time.time()
-        
-        study.optimize(
-            objective,
-            n_trials=self.n_trials,
-            show_progress_bar=self.verbose
-        )
-        
-        optimization_time = time.time() - start_time
-        
-        if self.verbose:
-            print(f"✅ Optimization completed in {optimization_time:.1f}s")
-            print(f"   Best score: {study.best_value:.4f}")
-            print(f"   Best params: {study.best_params}")
-        
-        return {
-            'best_params': study.best_params,
-            'best_score': study.best_value,
-            'optimization_time': optimization_time,
-            'n_trials': len(study.trials)
-        }
-    
-    def train_model(
-        self,
-        model,
-        X_train,
-        y_train,
-        X_val=None,
-        y_val=None,
-        param_space: Optional[Dict[str, Any]] = None,
-        optimize: bool = True,
-        **fit_params
-    ) -> Dict[str, Any]:
-        """
-        Train a model with optional hyperparameter optimization
-        """
-        
-        if self.verbose:
-            print(f"🚀 Training {model.name}...")
-        
-        start_time = time.time()
-        results = {
-            'model_name': model.name,
-            'n_samples': len(y_train),
-            'n_features': X_train.shape[1] if hasattr(X_train, 'shape') else None
-        }
-        
-        # 1. Hyperparameter optimization
-        if optimize and param_space:
-            opt_results = self.optimize_hyperparameters(model, X_train, y_train, param_space)
-            results['optimization'] = opt_results
-            # Create model with best params
-            model.model = model._create_model(**opt_results['best_params'])
-        else:
-            # Use default model
-            model.model = model._create_model()
-            results['optimization'] = None
-        
-        # 2. Train the model
-        fit_start = time.time()
-        model.fit(X_train, y_train, **fit_params)
-        fit_time = time.time() - fit_start
-        
-        # 3. Cross-validation on training data
-        if self.verbose:
-            print(f"🔄 Running {self.cv_folds}-fold cross-validation...")
-        
-        cv_scores = cross_val_score(
-            model.model, X_train, y_train,
-            cv=self.cv_strategy,
-            scoring=self.scoring,
-            n_jobs=-1
-        )
-        
-        # 4. Basic predictions and metrics
-        train_pred = model.predict(X_train)
-        train_accuracy = accuracy_score(y_train, train_pred)
-        
-        val_accuracy = None
-        if X_val is not None and y_val is not None:
-            val_pred = model.predict(X_val)
-            val_accuracy = accuracy_score(y_val, val_pred)
-        
-        # 5. Compile results
-        total_time = time.time() - start_time
-        
-        results.update({
-            'cv_scores': cv_scores,
-            'cv_mean': cv_scores.mean(),
-            'cv_std': cv_scores.std(),
-            'train_accuracy': train_accuracy,
-            'val_accuracy': val_accuracy,
-            'fit_time': fit_time,
-            'total_time': total_time
-        })
-        
-        # Store in history
-        self.training_history[model.name] = results
-        
-        if self.verbose:
-            gap = train_accuracy - val_accuracy if val_accuracy else 0
-            print(f"✅ {model.name} completed in {total_time:.1f}s")
-            print(f"   CV: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
-            print(f"   Train: {train_accuracy:.4f}")
-            if val_accuracy:
-                print(f"   Val: {val_accuracy:.4f} (gap: {gap:.4f})")
-        
-        return results
-    
-    def get_training_history(self) -> Dict[str, Any]:
-        """Get all training history"""
-        return self.training_history.copy()
-    
-    def compare_models(self) -> None:
-        """Print comparison of all trained models"""
-        if not self.training_history:
-            print("No models trained yet.")
-            return
-        
-        print(f"\n📊 Model Comparison:")
-        print(f"{'Model':<20} {'CV Score':<12} {'Val Acc':<10} {'Gap':<8}")
-        print("-" * 55)
-        
-        for name, results in self.training_history.items():
-            cv_score = f"{results['cv_mean']:.4f}±{results['cv_std']:.3f}"
-            val_acc = f"{results['val_accuracy']:.4f}" if results['val_accuracy'] else "N/A"
-            gap = results['train_accuracy'] - results['val_accuracy'] if results['val_accuracy'] else 0
-            gap_str = f"{gap:.4f}" if results['val_accuracy'] else "N/A"
-            
-            print(f"{name:<20} {cv_score:<12} {val_acc:<10} {gap_str:<8}")
-    
-    def get_best_model_info(self, metric: str = "cv_mean") -> Optional[Dict[str, Any]]:
-        """Get information about the best performing model"""
-        if not self.training_history:
-            return None
-        
-        best_model = max(
-            self.training_history.items(),
-            key=lambda x: x[1].get(metric, 0)
-        )
-        
-        model_name, results = best_model
-        
-        return {
-            'model_name': model_name,
-            'metric_used': metric,
-            'metric_value': results.get(metric, 0),
-            'full_results': results
-        }
+        # Convert flat params back to nested structure if needed
+        structured_params = {}
+        for key, value in best_params.items():
+            if '.' in key:
+                parts = key.split('.')
+                if parts[0] not in structured_params:
+                    structured_params[parts[0]] = {}
+                structured_params[parts[0]][parts[1]] = value
+            else:
+                structured_params[key] = value
+
+        self.best_params = structured_params
+        self.best_score = study.best_value
+        self.best_pipeline = self.pipeline_factory(self.best_params)
+        self.best_pipeline.fit(X, y)
+
+        return self.best_pipeline
