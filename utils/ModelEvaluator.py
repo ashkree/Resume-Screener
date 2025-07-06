@@ -21,7 +21,7 @@ class ModelEvaluator:
         for (X, y), name in zip(splits, split_names):
             # Basic predictions and metrics
             preds = pipeline.predict(X)
-            result = self._compute_metrics(y, preds, name)
+            result = self._compute_metrics(y, preds, name, class_labels=class_labels)
             
             # Print summary
             self._print_evaluation_summary(result, name)
@@ -40,12 +40,16 @@ class ModelEvaluator:
         self.writer.flush()
         return results
 
-    def _compute_metrics(self, y_true, y_pred, split_name):
+    def _compute_metrics(self, y_true, y_pred, split_name, class_labels=None):
         """Compute basic classification metrics"""
         # Core metrics
         accuracy = accuracy_score(y_true, y_pred)
         conf_matrix = confusion_matrix(y_true, y_pred)
-        report = classification_report(y_true, y_pred, digits=4, output_dict=True)
+        
+        # Get class names for the classification report
+        target_names = self._get_class_names(len(np.unique(y_true)), class_labels)
+        report = classification_report(y_true, y_pred, digits=4, output_dict=True, 
+                                    target_names=target_names)
 
         # Per-class metrics
         precision, recall, f1, support = precision_recall_fscore_support(
@@ -81,8 +85,23 @@ class ModelEvaluator:
             "micro_recall": micro_recall,
             "micro_f1": micro_f1,
             "y_true": y_true,
-            "y_pred": y_pred
+            "y_pred": y_pred,
+            "class_labels": target_names
         }
+
+    def _get_class_names(self, num_classes, class_labels=None):
+        """Get class names based on number of classes"""
+        if class_labels:
+            return class_labels
+        elif num_classes == 2:
+            # Binary classification: Good Fit vs No Fit
+            return ["Fit", "No Fit"]
+        elif num_classes == 3:
+            # Multiclass: Good Fit, Potential Fit, No Fit
+            return ["Good Fit", "Potential Fit", "No Fit"]
+        else:
+            # Fallback to numeric labels
+            return [f"Class {i}" for i in range(num_classes)]
 
     def _compute_probability_metrics(self, pipeline, X, y, split_name):
         """Compute probability-based metrics"""
@@ -159,6 +178,20 @@ class ModelEvaluator:
             self.writer.add_scalar(f"{split_name}/Mean_Entropy", prob_metrics["mean_entropy"])
             self.writer.add_scalar(f"{split_name}/Std_Entropy", prob_metrics["std_entropy"])
 
+    def _get_class_names(self, num_classes, class_labels=None):
+        """Get class names based on number of classes"""
+        if class_labels:
+            return class_labels
+        elif num_classes == 2:
+            # Binary classification: Good Fit vs No Fit
+            return ["Good Fit", "No Fit"]
+        elif num_classes == 3:
+            # Multiclass: Good Fit, Potential Fit, No Fit
+            return ["Good Fit", "Potential Fit", "No Fit"]
+        else:
+            # Fallback to numeric labels
+            return [f"Class {i}" for i in range(num_classes)]
+
     def _print_evaluation_summary(self, result, split_name):
         """Print evaluation summary to console"""
         print(f"\n--- {split_name} Evaluation ---")
@@ -166,13 +199,42 @@ class ModelEvaluator:
         print(f"Macro F1: {result['macro_f1']:.4f}")
         print(f"Micro F1: {result['micro_f1']:.4f}")
         
+        # Print detailed classification report
+        print("\nDetailed Classification Report:")
+        report = result['classification_report']
+
+        # Formatting constants
+        CLASS_WIDTH = 15  # Made wider to accommodate "weighted avg"
+        METRIC_WIDTH = 10
+        PRECISION = 4
+
+        # Header
+        print(f"{'':>{CLASS_WIDTH}} {'precision':>{METRIC_WIDTH}} {'recall':>{METRIC_WIDTH}} {'f1-score':>{METRIC_WIDTH}} {'support':>{METRIC_WIDTH}}")
+        print()  # Empty line like sklearn
+
+        # Per-class metrics (right-aligned like sklearn)
+        for class_name in sorted(report.keys()):
+            if class_name not in ['accuracy', 'macro avg', 'micro avg', 'weighted avg']:
+                metrics = report[class_name]
+                print(f"{class_name:>{CLASS_WIDTH}} {metrics['precision']:>{METRIC_WIDTH}.{PRECISION}f} {metrics['recall']:>{METRIC_WIDTH}.{PRECISION}f} "
+                    f"{metrics['f1-score']:>{METRIC_WIDTH}.{PRECISION}f} {int(metrics['support']):>{METRIC_WIDTH}}")
+
+        print()  # Empty line like sklearn
+
+        # Overall accuracy (left-aligned from the start)
+        if 'accuracy' in report:
+            total_support = int(report['macro avg']['support'])
+            print(f"{'accuracy':>{CLASS_WIDTH}} {'':>{METRIC_WIDTH}} {'':>{METRIC_WIDTH}} {report['accuracy']:>{METRIC_WIDTH}.{PRECISION}f} {total_support:>{METRIC_WIDTH}}")
+
+        # Average metrics (left-aligned from the start)
+        for avg_type in ['macro avg', 'micro avg', 'weighted avg']:
+            if avg_type in report:
+                metrics = report[avg_type]
+                print(f"{avg_type:>{CLASS_WIDTH}} {metrics['precision']:>{METRIC_WIDTH}.{PRECISION}f} {metrics['recall']:>{METRIC_WIDTH}.{PRECISION}f} "
+                    f"{metrics['f1-score']:>{METRIC_WIDTH}.{PRECISION}f} {int(metrics['support']):>{METRIC_WIDTH}}")
+        
         print("\nConfusion Matrix:")
         print(result['confusion_matrix'])
-
-        print("\nClassfication Report:")
-        print(classification_report(result["y_true"], result["y_pred"], digits=4))
-
-        
 
     def log_training_history(self, training_history, experiment_name="default"):
         """Log training history scalar metrics"""
@@ -223,6 +285,51 @@ class ModelEvaluator:
             self.writer.add_scalar(metric_name, value)
         
         self.writer.flush()
+
+    def print_classification_report(self, result, split_name=None):
+        """Print a detailed classification report for a specific result"""
+        if split_name:
+            print(f"\n=== Classification Report: {split_name} ===")
+        else:
+            print(f"\n=== Classification Report ===")
+        
+        report = result['classification_report']
+        
+        # Use sklearn's built-in formatting
+        from sklearn.metrics import classification_report as sklearn_report
+        
+        # Get the original labels if available
+        y_true = getattr(result, 'y_true', None)
+        y_pred = getattr(result, 'y_pred', None)
+        
+        if y_true is not None and y_pred is not None:
+            print(sklearn_report(y_true, y_pred, digits=4))
+        else:
+            # Format the report dictionary manually
+            print(f"{'Class':<8} {'Precision':<10} {'Recall':<10} {'F1-Score':<10} {'Support':<10}")
+            print("=" * 50)
+            
+            # Per-class metrics
+            for class_name in sorted(report.keys()):
+                if class_name not in ['accuracy', 'macro avg', 'micro avg', 'weighted avg']:
+                    metrics = report[class_name]
+                    print(f"{class_name:<8} {metrics['precision']:<10.4f} {metrics['recall']:<10.4f} "
+                          f"{metrics['f1-score']:<10.4f} {int(metrics['support']):<10}")
+            
+            # Separator
+            print("-" * 50)
+            
+            # Average metrics
+            for avg_type in ['macro avg', 'micro avg', 'weighted avg']:
+                if avg_type in report:
+                    metrics = report[avg_type]
+                    print(f"{avg_type:<8} {metrics['precision']:<10.4f} {metrics['recall']:<10.4f} "
+                          f"{metrics['f1-score']:<10.4f} {int(metrics['support']):<10}")
+            
+            # Overall accuracy
+            if 'accuracy' in report:
+                total_support = int(report['macro avg']['support'])
+                print(f"{'accuracy':<8} {'':<10} {'':<10} {report['accuracy']:<10.4f} {total_support:<10}")
 
     def close(self):
         """Close the TensorBoard writer"""

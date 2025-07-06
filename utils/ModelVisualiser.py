@@ -12,7 +12,7 @@ class ModelVisualiser:
                              classification_report, split_name, pipeline, X, 
                              class_labels=None):
         """Create a comprehensive evaluation plot combining all visualizations"""
-        labels = class_labels if class_labels else list(range(confusion_matrix.shape[0]))
+        labels = class_labels if class_labels else self._get_class_names(confusion_matrix.shape[0])
         
         # Determine layout based on available data
         has_proba = hasattr(pipeline, "predict_proba")
@@ -272,6 +272,18 @@ class ModelVisualiser:
         
         plt.close(fig)
         return fig
+
+    def _get_class_names(self, num_classes):
+        """Get class names based on number of classes"""
+        if num_classes == 2:
+            # Binary classification: Good Fit vs No Fit
+            return ["Good Fit", "No Fit"]
+        elif num_classes == 3:
+            # Multiclass: Good Fit, Potential Fit, No Fit
+            return ["Good Fit", "Potential Fit", "No Fit"]
+        else:
+            # Fallback to numeric labels
+            return [f"Class {i}" for i in range(num_classes)]
 
     def close(self):
         """Close the TensorBoard writer"""

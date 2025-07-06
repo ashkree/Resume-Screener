@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 from .ModelEvaluator import ModelEvaluator
 from .ModelTrainer import ModelTrainer
 from .ModelVisualiser import ModelVisualiser
@@ -50,10 +51,21 @@ class ExperimentManager:
 
         # Evaluate with metrics
         evaluator = ModelEvaluator(log_dir=f"{self.log_dir}/{experiment.name}")
+        
+        # Determine class labels based on number of classes
+        num_classes = len(np.unique(train_data[1]))
+        if num_classes == 2:
+            class_labels = ["Good Fit", "No Fit"]
+        elif num_classes == 3:
+            class_labels = ["Good Fit", "Potential Fit", "No Fit"]
+        else:
+            class_labels = None
+            
         results = evaluator.evaluate_splits(
             trained_pipeline, 
             experiment.splits, 
-            experiment.split_names
+            experiment.split_names,
+            class_labels=class_labels
         )
 
         # Create visualizations if requested
@@ -70,7 +82,8 @@ class ExperimentManager:
                     classification_report=result['classification_report'],
                     split_name=split_name,
                     pipeline=trained_pipeline,
-                    X=X
+                    X=X,
+                    class_labels=class_labels  # Pass the class labels
                 )
             
             # Create training history visualization if available
