@@ -31,13 +31,6 @@ class ModelEvaluator:
         if self.writer:
             self._log_test_metrics(results)
 
-            # Add probability metrics if available
-            if hasattr(pipeline, "predict_proba"):
-                prob_metrics = self._compute_probability_metrics(
-                    pipeline, X_test, y_test)
-                results.update(prob_metrics)
-                self._log_probability_metrics(prob_metrics)
-
             # Log comprehensive text summary
             self._log_evaluation_summary(results)
 
@@ -117,149 +110,23 @@ class ModelEvaluator:
         else:
             return [f"Class {i}" for i in range(num_classes)]
 
-    def _compute_probability_metrics(self, pipeline, X_test, y_test):
-        """Compute probability-based metrics"""
-        try:
-            probs = pipeline.predict_proba(X_test)
-            confidences = np.max(probs, axis=1)
-
-            # Basic confidence statistics
-            prob_metrics = {
-                "probabilities": probs,
-                "confidences": confidences,
-                "mean_confidence": np.mean(confidences),
-                "std_confidence": np.std(confidences),
-                "min_confidence": np.min(confidences),
-                "max_confidence": np.max(confidences),
-            }
-
-            # Confidence percentiles
-            prob_metrics.update({
-                "confidence_25th": np.percentile(confidences, 25),
-                "confidence_50th": np.percentile(confidences, 50),
-                "confidence_75th": np.percentile(confidences, 75),
-                "confidence_90th": np.percentile(confidences, 90),
-            })
-
-            # Binary classification specific metrics
-            if probs.shape[1] == 2:
-                brier_score = brier_score_loss(y_test, probs[:, 1])
-                prob_metrics["brier_score"] = brier_score
-
-                # Entropy (uncertainty measure)
-                epsilon = 1e-15
-                probs_clipped = np.clip(probs, epsilon, 1 - epsilon)
-                entropy = -np.sum(probs_clipped *
-                                  np.log(probs_clipped), axis=1)
-                prob_metrics.update({
-                    "mean_entropy": np.mean(entropy),
-                    "std_entropy": np.std(entropy),
-                    "min_entropy": np.min(entropy),
-                    "max_entropy": np.max(entropy),
-                })
-
-            # Multiclass entropy
-            else:
-                epsilon = 1e-15
-                probs_clipped = np.clip(probs, epsilon, 1 - epsilon)
-                entropy = -np.sum(probs_clipped *
-                                  np.log(probs_clipped), axis=1)
-                prob_metrics.update({
-                    "mean_entropy": np.mean(entropy),
-                    "std_entropy": np.std(entropy),
-                    "min_entropy": np.min(entropy),
-                    "max_entropy": np.max(entropy),
-                })
-
-            return prob_metrics
-
-        except Exception as e:
-            print(f"⚠️ Failed to compute probability metrics: {e}")
-            return {}
-
     def _log_test_metrics(self, results):
         """Log test metrics to TensorBoard"""
 
         # === CORE PERFORMANCE METRICS ===
-        self.writer.add_scalar("Test/Accuracy", results["accuracy"])
-        self.writer.add_scalar("Test/Macro_F1", results["macro_f1"])
-        self.writer.add_scalar("Test/Micro_F1", results["micro_f1"])
-        self.writer.add_scalar("Test/Weighted_F1", results["weighted_f1"])
+        self.writer.add_scalar("Test_Performance/Accuracy", results["accuracy"])
+        self.writer.add_scalar("Test_Performance/Macro_F1", results["macro_f1"])
+        self.writer.add_scalar("Test_Performance/Micro_F1", results["micro_f1"])
+        self.writer.add_scalar("Test_Performance/Weighted_F1", results["weighted_f1"])
 
         # === PRECISION/RECALL METRICS ===
-        self.writer.add_scalar("Test/Macro_Precision",
-                               results["macro_precision"])
-        self.writer.add_scalar("Test/Macro_Recall", results["macro_recall"])
-        self.writer.add_scalar("Test/Micro_Precision",
-                               results["micro_precision"])
-        self.writer.add_scalar("Test/Micro_Recall", results["micro_recall"])
-        self.writer.add_scalar("Test/Weighted_Precision",
-                               results["weighted_precision"])
-        self.writer.add_scalar("Test/Weighted_Recall",
-                               results["weighted_recall"])
-
-        # === DATASET INFO ===
-        self.writer.add_scalar("Test/Num_Samples", results["num_samples"])
-        self.writer.add_scalar("Test/Num_Classes", results["num_classes"])
-
-        # === PER-CLASS METRICS ===
-        class_labels = results["class_labels"]
-        for i, (precision, recall, f1, support) in enumerate(zip(
-            results["per_class_precision"],
-            results["per_class_recall"],
-            results["per_class_f1"],
-            results["per_class_support"]
-        )):
-            if i < len(class_labels):
-                class_name = class_labels[i].replace(" ", "_")
-                self.writer.add_scalar(
-                    f"Test_PerClass/{class_name}_Precision", precision)
-                self.writer.add_scalar(
-                    f"Test_PerClass/{class_name}_Recall", recall)
-                self.writer.add_scalar(f"Test_PerClass/{class_name}_F1", f1)
-                self.writer.add_scalar(
-                    f"Test_PerClass/{class_name}_Support", support)
-
-    def _log_probability_metrics(self, prob_metrics):
-        """Log probability metrics to TensorBoard"""
-        if not prob_metrics:
-            return
-
-        # === CONFIDENCE METRICS ===
-        self.writer.add_scalar("Test_Confidence/Mean",
-                               prob_metrics["mean_confidence"])
-        self.writer.add_scalar("Test_Confidence/Std",
-                               prob_metrics["std_confidence"])
-        self.writer.add_scalar("Test_Confidence/Min",
-                               prob_metrics["min_confidence"])
-        self.writer.add_scalar("Test_Confidence/Max",
-                               prob_metrics["max_confidence"])
-
-        # === CONFIDENCE PERCENTILES ===
-        self.writer.add_scalar(
-            "Test_Confidence/25th_Percentile", prob_metrics["confidence_25th"])
-        self.writer.add_scalar(
-            "Test_Confidence/50th_Percentile", prob_metrics["confidence_50th"])
-        self.writer.add_scalar(
-            "Test_Confidence/75th_Percentile", prob_metrics["confidence_75th"])
-        self.writer.add_scalar(
-            "Test_Confidence/90th_Percentile", prob_metrics["confidence_90th"])
-
-        # === CALIBRATION METRICS ===
-        if "brier_score" in prob_metrics:
-            self.writer.add_scalar(
-                "Test_Calibration/Brier_Score", prob_metrics["brier_score"])
-
-        # === UNCERTAINTY METRICS ===
-        if "mean_entropy" in prob_metrics:
-            self.writer.add_scalar(
-                "Test_Uncertainty/Mean_Entropy", prob_metrics["mean_entropy"])
-            self.writer.add_scalar(
-                "Test_Uncertainty/Std_Entropy", prob_metrics["std_entropy"])
-            self.writer.add_scalar(
-                "Test_Uncertainty/Min_Entropy", prob_metrics["min_entropy"])
-            self.writer.add_scalar(
-                "Test_Uncertainty/Max_Entropy", prob_metrics["max_entropy"])
+        self.writer.add_scalar("Test_Precision/Macro_Precision", results["macro_precision"])
+        self.writer.add_scalar("Test_Precision/Micro_Precision", results["micro_precision"])
+        self.writer.add_scalar("Test_Precision/weighted_Precision", results["weighted_precision"])
+        
+        self.writer.add_scalar("Test_Recall/Macro_Recall", results["macro_recall"])
+        self.writer.add_scalar("Test_Recall/Micro_Recall", results["micro_recall"])
+        self.writer.add_scalar("Test_Recall/weighted_Recall", results["weighted_recall"])
 
     def _print_test_summary(self, results):
         """Print comprehensive test evaluation summary"""
@@ -384,51 +251,12 @@ class ModelEvaluator:
 {self._format_confusion_matrix_text(results['confusion_matrix'], results['class_labels'])}
 ```
 
-{self._format_probability_summary(results)}
-
 ---
 *Test evaluation completed with {results['num_samples']} samples across {results['num_classes']} classes*
 """
 
         self.writer.add_text("Test_Evaluation_Summary",
                              summary_text, global_step=0)
-
-    def _format_probability_summary(self, results):
-        """Format probability metrics for text summary"""
-        if 'mean_confidence' not in results:
-            return ""
-
-        prob_summary = f"""
-## 🎲 **Prediction Confidence Analysis**
-- **Mean Confidence**: {results['mean_confidence']:.4f}
-- **Std Confidence**: {results['std_confidence']:.4f}
-- **Min Confidence**: {results['min_confidence']:.4f}
-- **Max Confidence**: {results['max_confidence']:.4f}
-
-### Confidence Percentiles
-- **25th Percentile**: {results['confidence_25th']:.4f}
-- **50th Percentile**: {results['confidence_50th']:.4f}
-- **75th Percentile**: {results['confidence_75th']:.4f}
-- **90th Percentile**: {results['confidence_90th']:.4f}"""
-
-        # Add binary classification specific metrics
-        if 'brier_score' in results:
-            prob_summary += f"""
-
-## 🎯 **Model Calibration**
-- **Brier Score**: {results['brier_score']:.4f} (lower is better)"""
-
-        # Add uncertainty metrics
-        if 'mean_entropy' in results:
-            prob_summary += f"""
-
-## 🌡️ **Prediction Uncertainty**
-- **Mean Entropy**: {results['mean_entropy']:.4f}
-- **Std Entropy**: {results['std_entropy']:.4f}
-- **Min Entropy**: {results['min_entropy']:.4f}
-- **Max Entropy**: {results['max_entropy']:.4f}"""
-
-        return prob_summary
 
     def _format_per_class_metrics(self, results):
         """Format per-class metrics for text summary"""

@@ -101,17 +101,31 @@ class ModelTrainer:
             # TensorBoard logging
             if self.writer:
                 overfit_gap = training_accuracy - validation_accuracy
+                 
+                self.writer.add_scalar(
+                    "Optimization/Training_Accuracy", 
+                    training_accuracy, 
+                    trial.number,
+                    )
+                
+                self.writer.add_scalar(
+                    "Optimization/Validation_Accuracy", 
+                    validation_accuracy, 
+                    trial.number,
+                )
 
-                self.writer.add_scalars(
-                    "Optimization/Accuracies",
-                    {
-                        "Training_Accuracy": training_accuracy,
-                        "Validation_Accuracy": validation_accuracy,
-                        "Best_So_Far": best_score_so_far,
-                        "Overfit_Gap": overfit_gap
-                    },
+                self.writer.add_scalar(
+                    "Optimization/best_score_so_far",
+                    best_score_so_far,
                     trial.number
                 )
+
+                self.writer.add_scalar(
+                    "Optimization/Overfit_Gap",
+                    overfit_gap,
+                    trial.number
+                )
+                
                 self.writer.flush()
 
             # Store trial results
@@ -122,12 +136,13 @@ class ModelTrainer:
                 "validation_accuracy": validation_accuracy,
                 "validation_method": "custom_split" if self.using_custom_validation else "cross_validation"
             }
-
+            
+            trial_result["mean_score"] = validation_accuracy
             # Add fold scores only for CV
             if not self.using_custom_validation:
                 trial_result["fold_scores"] = getattr(
                     self, '_last_fold_scores', [])
-                trial_result["mean_score"] = validation_accuracy
+                
 
             self.training_history.append(trial_result)
             return validation_accuracy
@@ -273,26 +288,6 @@ class ModelTrainer:
 
         # Log the text summary
         self.writer.add_text("Experiment_Summary", summary_text, global_step=0)
-
-        # Individual scalar metrics
-        self.writer.add_scalar(
-            "Summary/Best_Validation_Score", best_validation_score)
-        self.writer.add_scalar(
-            "Summary/Best_Training_Score", best_training_score)
-        self.writer.add_scalar("Summary/Best_Trial_Number", best_trial_idx)
-        self.writer.add_scalar("Summary/Total_Trials",
-                               len(self.training_history))
-        self.writer.add_scalar(
-            "Summary/Best_Trial_Overfitting_Gap", best_overfitting_gap)
-        self.writer.add_scalar(
-            "Summary/Total_Score_Improvement", score_improvement)
-        self.writer.add_scalar("Summary/Trials_To_Best", trials_to_best)
-
-        # Add stability only for CV
-        if not self.using_custom_validation and "fold_scores" in best_trial:
-            best_stability = 1.0 - np.std(best_trial["fold_scores"])
-            self.writer.add_scalar(
-                "Summary/Best_Trial_Stability", best_stability)
 
         # Hyperparameter logging
         best_params = self._flatten_params(best_trial["params"])
