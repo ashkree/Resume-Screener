@@ -1,4 +1,4 @@
-const BASE_URL = "https://resume-backend.onrender.com"; // replace with your backend Render URL
+const BASE_URL = "https://irsas.onrender.com/"; // replace with your backend Render URL
 
 function login() {
   const email = document.getElementById("email").value;
