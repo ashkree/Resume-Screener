@@ -1,0 +1,16 @@
+{
+  "candidate_name": "Maveron Aguares",
+  "email": "mav@example.com",
+  "skills": ["Python", "NLP", "TensorFlow"],
+  "experience_years": 4,
+  "education": "BSc Computer Science",
+  "raw_resume_text": "...",  
+  "job_applied": "AI Engineer",
+  "fit_score": 0.81,
+  "fit_category": "Good Fit",
+  "explanation": {
+    "important_features": ["NLP", "Python"],
+    "shap_values": {"Python": 0.15, "NLP": 0.12}
+  },
+  "uploaded_at": "2025-07-12T10:00:00Z"
+}
