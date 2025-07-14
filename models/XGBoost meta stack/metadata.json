@@ -1,0 +1,5 @@
+{
+    "name": "XGBoost meta stack",
+    "description": "Stack ensemble classifier with XGBoost classifier",
+    "timestamp": "2025-07-14T16:24:48.096971"
+}

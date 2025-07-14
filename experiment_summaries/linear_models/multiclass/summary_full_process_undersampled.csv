@@ -1,0 +1,13 @@
+name,status,timestamp,description,test_accuracy,test_macro_precision,test_macro_recall,test_macro_f1,test_micro_precision,test_micro_recall,test_micro_f1,test_weighted_precision,test_weighted_recall,test_weighted_f1,test_num_samples,test_num_classes
+Logistic Regression classifier,Completed,2025-07-14T07:14:18.553888,"
+multiclass Logistic Regression with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.4539089848308051,0.4550405254879477,0.4539089848308051,0.4537639847090033,0.4539089848308051,0.4539089848308051,0.4539089848308051,0.45504052548794777,0.4539089848308051,0.4537639847090033,2571,3
+Ridge classifier,Completed,2025-07-14T07:14:22.012079,"
+multiclass Ridge with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.45468689225982106,0.4583342553930789,0.4546868922598211,0.4559461685911819,0.45468689225982106,0.45468689225982106,0.45468689225982106,0.4583342553930789,0.45468689225982106,0.4559461685911819,2571,3
+LinearSVC classifier,Completed,2025-07-14T07:14:26.255273,"
+multiclass LinearSVC with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.441073512252042,0.4475485007644728,0.441073512252042,0.44221405183007495,0.441073512252042,0.441073512252042,0.441073512252042,0.4475485007644727,0.441073512252042,0.442214051830075,2571,3
