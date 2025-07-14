@@ -1,0 +1,5 @@
+{
+    "name": "Binary Logistic Regression classifier",
+    "description": "\nmulticlass Logistic Regression with TF-IDF and no hyperparameter tuning. \nDataset has full_process preprocessing and is oversampled\n",
+    "timestamp": "2025-07-14T05:39:21.805733"
+}

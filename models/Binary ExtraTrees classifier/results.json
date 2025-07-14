@@ -1,0 +1,59 @@
+{
+    "accuracy": 0.42551536367172305,
+    "confusion_matrix": "[[205 221 431]\n [ 97 272 488]\n [ 91 149 617]]",
+    "classification_report": {
+        "Good Fit": {
+            "precision": 0.5216284987277354,
+            "recall": 0.23920653442240372,
+            "f1-score": 0.328,
+            "support": 857.0
+        },
+        "Potential Fit": {
+            "precision": 0.4236760124610592,
+            "recall": 0.31738623103850644,
+            "f1-score": 0.3629086057371581,
+            "support": 857.0
+        },
+        "Not Fit": {
+            "precision": 0.4016927083333333,
+            "recall": 0.7199533255542591,
+            "f1-score": 0.5156707062264939,
+            "support": 857.0
+        },
+        "accuracy": 0.42551536367172305,
+        "macro avg": {
+            "precision": 0.4489990731740426,
+            "recall": 0.4255153636717231,
+            "f1-score": 0.40219310398788394,
+            "support": 2571.0
+        },
+        "weighted avg": {
+            "precision": 0.4489990731740427,
+            "recall": 0.42551536367172305,
+            "f1-score": 0.402193103987884,
+            "support": 2571.0
+        }
+    },
+    "per_class_precision": "[0.5216285  0.42367601 0.40169271]",
+    "per_class_recall": "[0.23920653 0.31738623 0.71995333]",
+    "per_class_f1": "[0.328      0.36290861 0.51567071]",
+    "per_class_support": "[857 857 857]",
+    "macro_precision": 0.4489990731740426,
+    "macro_recall": 0.4255153636717231,
+    "macro_f1": 0.40219310398788394,
+    "micro_precision": 0.42551536367172305,
+    "micro_recall": 0.42551536367172305,
+    "micro_f1": 0.42551536367172305,
+    "weighted_precision": 0.4489990731740427,
+    "weighted_recall": 0.42551536367172305,
+    "weighted_f1": 0.402193103987884,
+    "y_true": "1136    1\n476     2\n659     2\n1610    0\n339     2\n       ..\n1239    1\n957     1\n954     1\n1144    1\n1127    1\nName: label, Length: 2571, dtype: int64",
+    "y_pred": "[1 2 2 ... 1 1 1]",
+    "class_labels": [
+        "Good Fit",
+        "Potential Fit",
+        "Not Fit"
+    ],
+    "num_samples": 2571,
+    "num_classes": 3
+}

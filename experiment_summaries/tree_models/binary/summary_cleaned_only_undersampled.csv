@@ -1,0 +1,9 @@
+name,status,timestamp,description,test_accuracy,test_macro_precision,test_macro_recall,test_macro_f1,test_micro_precision,test_micro_recall,test_micro_f1,test_weighted_precision,test_weighted_recall,test_weighted_f1,test_num_samples,test_num_classes
+Random Forest classifier,Completed,2025-07-14T07:12:45.734792,"
+binary Random Forest with TF-IDF and no hyperparameter tuning. 
+Dataset has cleaned_only preprocessing and is undersampled
+",0.6476079346557759,0.6478406312347179,0.6476079346557759,0.6474692165195597,0.6476079346557759,0.6476079346557759,0.6476079346557759,0.6478406312347179,0.6476079346557759,0.6474692165195597,1714,2
+ExtraTrees classifier,Completed,2025-07-14T07:12:50.360049,"
+binary ExtraTrees with TF-IDF and no hyperparameter tuning. 
+Dataset has cleaned_only preprocessing and is undersampled
+",0.6341890315052509,0.6343428643090042,0.6341890315052509,0.6340842811687615,0.6341890315052509,0.6341890315052509,0.6341890315052509,0.6343428643090042,0.6341890315052509,0.6340842811687616,1714,2

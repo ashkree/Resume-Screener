@@ -1,0 +1,5 @@
+{
+    "name": "Baseline binary MultinomialNB",
+    "description": "binary MultinomialNB with TF-IDF and no hyperparameter tuning.",
+    "timestamp": "2025-07-13T21:32:49.448284"
+}

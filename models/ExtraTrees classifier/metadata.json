@@ -1,0 +1,5 @@
+{
+    "name": "ExtraTrees classifier",
+    "description": "\nmulticlass ExtraTrees with TF-IDF and no hyperparameter tuning. \nDataset has full_process preprocessing and is oversampled\n",
+    "timestamp": "2025-07-14T07:15:45.869698"
+}

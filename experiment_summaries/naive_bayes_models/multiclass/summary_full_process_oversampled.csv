@@ -1,0 +1,13 @@
+name,status,timestamp,description,test_accuracy,test_macro_precision,test_macro_recall,test_macro_f1,test_micro_precision,test_micro_recall,test_micro_f1,test_weighted_precision,test_weighted_recall,test_weighted_f1,test_num_samples,test_num_classes
+MultinomialNB classifier,Completed,2025-07-14T07:16:32.813022,"
+multiclass MultinomialNB with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is oversampled
+",0.441073512252042,0.4438610934382166,0.441073512252042,0.44009617436557397,0.441073512252042,0.441073512252042,0.441073512252042,0.44386109343821656,0.441073512252042,0.4400961743655739,2571,3
+BernoulliNB classifier,Completed,2025-07-14T07:16:38.653181,"
+multiclass BernoulliNB with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is oversampled
+",0.4321275768183586,0.43333852131509837,0.4321275768183586,0.43206230528230716,0.4321275768183586,0.4321275768183586,0.4321275768183586,0.43333852131509837,0.4321275768183586,0.4320623052823071,2571,3
+ComplementNB classifier,Completed,2025-07-14T07:16:44.402077,"
+multiclass ComplementNB with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is oversampled
+",0.4430182808245819,0.4456068621944013,0.4430182808245819,0.44198699350401177,0.4430182808245819,0.4430182808245819,0.4430182808245819,0.44560686219440127,0.4430182808245819,0.4419869935040118,2571,3

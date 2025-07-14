@@ -1,0 +1,5 @@
+{
+    "name": "Baseline binary ExtraTrees",
+    "description": "binary ExtraTrees with TF-IDF and no hyperparameter tuning.",
+    "timestamp": "2025-07-13T21:33:28.385142"
+}

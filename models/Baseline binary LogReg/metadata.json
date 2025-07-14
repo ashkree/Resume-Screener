@@ -1,5 +1,0 @@
-{
-    "name": "Baseline binary LogReg",
-    "description": "binary LogReg with TF-IDF and no hyperparameter tuning.",
-    "timestamp": "2025-07-10T10:42:01.013759"
-}

@@ -1,0 +1,5 @@
+{
+    "name": "Binary BernoulliNB classifier",
+    "description": "\nmulticlass BernoulliNB with TF-IDF and no hyperparameter tuning. \nDataset has full_process preprocessing and is oversampled\n",
+    "timestamp": "2025-07-14T05:41:09.900953"
+}

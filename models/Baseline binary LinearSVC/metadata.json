@@ -1,0 +1,5 @@
+{
+    "name": "Baseline binary LinearSVC",
+    "description": "binary LinearSVC with TF-IDF and no hyperparameter tuning.",
+    "timestamp": "2025-07-13T21:33:23.654463"
+}

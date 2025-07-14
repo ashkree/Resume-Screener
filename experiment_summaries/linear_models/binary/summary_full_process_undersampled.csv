@@ -1,0 +1,13 @@
+name,status,timestamp,description,test_accuracy,test_macro_precision,test_macro_recall,test_macro_f1,test_micro_precision,test_micro_recall,test_micro_f1,test_weighted_precision,test_weighted_recall,test_weighted_f1,test_num_samples,test_num_classes
+Logistic Regression classifier,Completed,2025-07-14T07:12:16.469184,"
+binary Logistic Regression with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.5831485587583148,0.5834702912391359,0.5831485587583148,0.5827464875372161,0.5831485587583148,0.5831485587583148,0.5831485587583148,0.5834702912391359,0.5831485587583148,0.5827464875372161,1804,2
+Ridge classifier,Completed,2025-07-14T07:12:18.561533,"
+binary Ridge with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.5803769401330376,0.580998262243873,0.5803769401330376,0.5795706819983529,0.5803769401330376,0.5803769401330376,0.5803769401330376,0.580998262243873,0.5803769401330376,0.5795706819983529,1804,2
+LinearSVC classifier,Completed,2025-07-14T07:12:20.795298,"
+binary LinearSVC with TF-IDF and no hyperparameter tuning. 
+Dataset has full_process preprocessing and is undersampled
+",0.5764966740576497,0.5770436280990507,0.5764966740576497,0.5757436958234831,0.5764966740576497,0.5764966740576497,0.5764966740576497,0.5770436280990507,0.5764966740576497,0.5757436958234832,1804,2
