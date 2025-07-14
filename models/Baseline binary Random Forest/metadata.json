@@ -1,5 +1,0 @@
-{
-    "name": "Baseline binary Random Forest",
-    "description": "binary Random Forest with TF-IDF and no hyperparameter tuning.",
-    "timestamp": "2025-07-13T21:32:40.601608"
-}

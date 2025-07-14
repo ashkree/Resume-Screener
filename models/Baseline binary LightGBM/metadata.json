@@ -1,5 +1,0 @@
-{
-    "name": "Baseline binary LightGBM",
-    "description": "binary LightGBM with TF-IDF and no hyperparameter tuning.",
-    "timestamp": "2025-07-13T21:33:36.557016"
-}

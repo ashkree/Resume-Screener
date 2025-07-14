@@ -1,0 +1,5 @@
+{
+    "name": "LogReg meta stack",
+    "description": "Stack ensemble classifier with LogisticRegression classifier",
+    "timestamp": "2025-07-14T15:19:05.441045"
+}
