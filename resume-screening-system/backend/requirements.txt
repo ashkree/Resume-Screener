@@ -1,6 +1,6 @@
-fastapi==0.95.1
-uvicorn[standard]==0.22.0
-python-multipart==0.0.6
-python-jose==3.3.0
-passlib[bcrypt]==1.7.4
-databases[sqlite]==0.6.3
+fastapi
+uvicorn[standard]
+python-multipart
+python-jose
+passlib[bcrypt]
+databases
