@@ -10,8 +10,8 @@ SECRET = "secret123"
 def verify_user(email, password):
     user = get_user(email)  # Fetching user tuple (email, hashed_pw, role)
     if user and bcrypt.verify(password, user[1]):  # Compare hashed password
-        return user[2]  # Return role (either 'applicant' or 'hr') if valid
-    return None  # If no match, return None
+        return True
+    return False
 
 # Creates a new user by hashing their input password and saving to db
 def create_user(email, password, role):
@@ -27,4 +27,4 @@ def decode_token(token: str):
     try:
         return jwt.decode(token, SECRET, algorithms=["HS256"])
     except JWTError:
-        raise  # Raise error if token is invalid or expired
+        raise

@@ -1,5 +1,6 @@
-const BASE_URL = "https://irsas.onrender.com"; // Your Render backend URL without trailing slash
+const BASE_URL = "https://irsas.onrender.com"; 
 
+// Handles user login, storing token and role in localStorage
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -13,27 +14,27 @@ function login() {
   const form = new FormData();
   form.append("email", email);
   form.append("password", password);
-  if(role) form.append("role", role);
+  if (role) form.append("role", role);
 
   fetch(BASE_URL + "/login", { method: "POST", body: form })
     .then(res => {
-      if (!res.ok) {
-        alert("Login failed: " + res.statusText);
-        throw new Error("Login failed");
-      }
+      if (!res.ok) return res.text().then(text => { throw new Error(text); });
       return res.json();
     })
     .then(data => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
+      // Redirect user to appropriate dashboard
       if (data.role === "applicant") location.href = "applicant.html";
       else location.href = "hr.html";
     })
     .catch(err => {
       console.error("Login error:", err);
+      alert("Login failed: " + err.message);
     });
 }
 
+// Uploads CV file for applicant, displays AI review
 function uploadCV() {
   const file = document.getElementById("cv").files[0];
   if (!file) {
@@ -48,8 +49,7 @@ function uploadCV() {
   fetch(BASE_URL + "/upload", { method: "POST", body: form })
     .then(res => {
       if (!res.ok) {
-        alert("Failed to upload CV: " + res.statusText);
-        throw new Error("Upload failed");
+        return res.text().then(msg => { throw new Error(msg); });
       }
       return res.json();
     })
@@ -57,10 +57,12 @@ function uploadCV() {
       document.getElementById("result").innerText = data.review;
     })
     .catch(err => {
+      alert("Upload failed: " + err.message);
       console.error("Upload CV error:", err);
     });
 }
 
+// Fetch and display the applicant's own latest AI review
 function getReview() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -71,8 +73,7 @@ function getReview() {
   fetch(`${BASE_URL}/review?token=${token}`)
     .then(res => {
       if (!res.ok) {
-        alert("Failed to get review: " + res.statusText);
-        throw new Error("Failed to get review");
+        return res.text().then(msg => { throw new Error(msg); });
       }
       return res.json();
     })
@@ -80,10 +81,13 @@ function getReview() {
       document.getElementById("result").innerText = data.review;
     })
     .catch(err => {
+      alert("Review fetch failed: " + err.message);
       console.error("Get review error:", err);
     });
 }
 
+
+// On HR dashboard page: fetch all applicants and setup click handlers to load their reviews
 if (window.location.pathname.includes("hr.html")) {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -92,25 +96,23 @@ if (window.location.pathname.includes("hr.html")) {
   } else {
     fetch(`${BASE_URL}/applicants?token=${token}`)
       .then(res => {
-        if (!res.ok) {
-          alert("Failed to fetch applicants: " + res.statusText);
-          throw new Error("Failed to fetch applicants");
-        }
+        if (!res.ok) return res.text().then(text => { throw new Error(text); });
         return res.json();
       })
       .then(applicants => {
         const ul = document.getElementById("applicants");
         ul.innerHTML = "";
+        if (applicants.length === 0) {
+          ul.innerHTML = "<li>No applicants found.</li>";
+          return;
+        }
         applicants.forEach(email => {
           const li = document.createElement("li");
           li.textContent = email;
           li.onclick = () => {
             fetch(`${BASE_URL}/applicant_review?email=${encodeURIComponent(email)}&token=${token}`)
               .then(res => {
-                if (!res.ok) {
-                  alert("Failed to fetch applicant review: " + res.statusText);
-                  throw new Error("Failed to fetch applicant review");
-                }
+                if (!res.ok) return res.text().then(text => { throw new Error(text); });
                 return res.json();
               })
               .then(data => {
@@ -118,6 +120,7 @@ if (window.location.pathname.includes("hr.html")) {
               })
               .catch(err => {
                 console.error("Applicant review error:", err);
+                alert("Failed to load applicant review: " + err.message);
               });
           };
           ul.appendChild(li);
@@ -125,6 +128,7 @@ if (window.location.pathname.includes("hr.html")) {
       })
       .catch(err => {
         console.error("Applicants fetch error:", err);
+        alert("Failed to load applicant list: " + err.message);
       });
   }
 }
