@@ -1,7 +1,5 @@
 fastapi
 uvicorn
-python-multipart
-passlib
-bcrypt
-python-jose
-aiofiles
+python-jose[cryptography]
+passlib[bcrypt]
+psycopg2-binary

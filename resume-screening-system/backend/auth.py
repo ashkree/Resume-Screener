@@ -1,17 +1,18 @@
 from jose import jwt, JWTError
 from passlib.hash import bcrypt
+from database import get_user, add_user
 
 SECRET = "secret123"
-USERS = {
-    "applicant@example.com": {"password": bcrypt.hash("1234"), "role": "applicant"},
-    "hr@example.com": {"password": bcrypt.hash("1234"), "role": "hr"}
-}
 
 def verify_user(email, password):
-    user = USERS.get(email)
-    if user and bcrypt.verify(password, user["password"]):
-        return user["role"]
+    user = get_user(email)
+    if user and bcrypt.verify(password, user[1]):  # user[1] = hashed password
+        return user[2]  # user[2] = role
     return None
+
+def create_user(email, password, role):
+    hashed_password = bcrypt.hash(password)
+    add_user(email, hashed_password, role)
 
 def create_token(data: dict):
     return jwt.encode(data, SECRET, algorithm="HS256")

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, Form, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from auth import verify_user, create_token, decode_token
+from auth import verify_user, create_token, decode_token, create_user
 from database import init_db, save_review, get_review, get_all_users
 from ml_model import process_resume
 import os
@@ -8,22 +8,28 @@ import os
 app = FastAPI()
 init_db()
 
-# Allow requests from Netlify site
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace * with your frontend URL when ready
+    allow_origins=["*"],  # For production, replace "*" with frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.post("/login")
-def login(email: str = Form(...), password: str = Form(...)):
-    role = verify_user(email, password)
-    if role:
-        token = create_token({"email": email, "role": role})
-        return {"token": token, "role": role}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+def login(email: str = Form(...), password: str = Form(...), role: str = Form(None)):
+    existing_role = verify_user(email, password)
+    if existing_role:
+        token = create_token({"email": email, "role": existing_role})
+        return {"token": token, "role": existing_role}
+    
+    # New user flow
+    if role not in ["applicant", "hr"]:
+        raise HTTPException(status_code=401, detail="Invalid credentials or missing role for new user")
+    
+    create_user(email, password, role)
+    token = create_token({"email": email, "role": role})
+    return {"token": token, "role": role}
 
 @app.post("/upload")
 async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
