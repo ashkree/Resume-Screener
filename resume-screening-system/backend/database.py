@@ -90,7 +90,7 @@ def get_review(email):
 def get_all_users():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT email FROM reviews")  # Only users who submitted reviews
+    cur.execute("SELECT email FROM users")
     emails = [row[0] for row in cur.fetchall()]
     cur.close()
     conn.close()
