@@ -86,11 +86,11 @@ def get_review(email):
     else:
         return {"review": "No review yet.", "filename": "No file uploaded."}
 
-# Get a list of all user emails (used by HR dashboard)
+# Get a list of all applicant emails (used by HR dashboard)
 def get_all_users():
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT email FROM users")
+    cur.execute("SELECT email FROM users WHERE role = 'applicant'")
     emails = [row[0] for row in cur.fetchall()]
     cur.close()
     conn.close()
