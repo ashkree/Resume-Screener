@@ -1,6 +1,114 @@
-<h2>Applicant Dashboard</h2>
-<input type="file" id="cv"><br>
-<button onclick="uploadCV()">Upload CV</button>
-<button onclick="getReview()">Check Review</button>
-<p id="result"></p>
-<script src="script.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Applicant Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f4f8;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+  }
+  header {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 100%;
+    padding: 24px 0;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(102,126,234,0.3);
+  }
+  main {
+    flex-grow: 1;
+    width: 90%;
+    max-width: 480px;
+    margin-top: 30px;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  input[type="file"] {
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px dashed #667eea;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+  }
+  input[type="file"]:hover {
+    border-color: #764ba2;
+  }
+
+  button {
+    margin-top: 20px;
+    background: #ff416c;
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 14px 40px;
+    cursor: pointer;
+    transition: background 0.4s ease;
+    box-shadow: 0 6px 20px rgba(255,75,43,0.6);
+  }
+  button:hover {
+    background: linear-gradient(45deg, #ff4b2b, #ff416c);
+  }
+
+  #result {
+    margin-top: 30px;
+    padding: 20px;
+    background: #e0e7ff;
+    color: #1e40af;
+    font-weight: 600;
+    border-radius: 12px;
+    min-height: 80px;
+    width: 100%;
+    text-align: center;
+    box-shadow: inset 0 0 10px #c7d2fe;
+  }
+
+  footer {
+    margin: 30px 0;
+    font-size: 0.85rem;
+    color: #999;
+  }
+
+  @media (max-width: 500px) {
+    main {
+      padding: 20px;
+    }
+    button {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>Applicant Dashboard</header>
+  <main role="main" aria-label="Upload your CV and get AI review">
+    <input type="file" id="cv" accept=".pdf,.doc,.docx" aria-label="Upload your CV file" />
+    <button onclick="uploadCV()" aria-label="Upload CV and get AI review">Upload CV</button>
+    <button onclick="getReview()" aria-label="Check your latest AI review">Check Review</button>
+    <p id="result" aria-live="polite" aria-atomic="true">Your AI review will appear here...</p>
+  </main>
+  <footer>© 2025 AI Resume Screener</footer>
+  <script src="script.js"></script>
+</body>
+</html>

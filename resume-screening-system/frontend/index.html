@@ -1,5 +1,161 @@
-<h2>Login</h2>
-<input id="email" placeholder="Email"><br>
-<input id="password" type="password"><br>
-<button onclick="login()">Login</button>
-<script src="script.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login - AI Resume Screener</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+  .login-container {
+    background: rgba(255,255,255,0.1);
+    padding: 40px;
+    border-radius: 16px;
+    width: 360px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  h2 {
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 14px 20px;
+    margin: 10px 0 20px 0;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    outline: none;
+    transition: background-color 0.3s ease;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+  input::placeholder {
+    color: #e0e0e0;
+  }
+  select {
+    cursor: pointer;
+  }
+  input:focus, select:focus {
+    background: rgba(255,255,255,0.4);
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #ff416c;
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.4s ease;
+    box-shadow: 0 4px 12px rgba(255,75,43,0.6);
+  }
+  button:hover {
+    background: linear-gradient(45deg, #ff4b2b, #ff416c);
+  }
+
+  .role-note {
+    font-size: 0.9rem;
+    color: #ffccd5;
+    margin-top: -15px;
+    margin-bottom: 20px;
+  }
+
+  /* Subtle floating background circles */
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    animation: float 7s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  .circle1 {
+    width: 120px;
+    height: 120px;
+    top: -50px;
+    right: -50px;
+    animation-delay: 0s;
+  }
+  .circle2 {
+    width: 80px;
+    height: 80px;
+    bottom: -40px;
+    left: -40px;
+    animation-delay: 3s;
+  }
+  .circle3 {
+    width: 100px;
+    height: 100px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 5s;
+  }
+  @keyframes float {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.15;
+    }
+    100% {
+      transform: translateY(-20px) translateX(10px);
+      opacity: 0.25;
+    }
+  }
+
+  /* Responsive */
+  @media(max-width: 420px) {
+    .login-container {
+      width: 90vw;
+      padding: 30px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="login-container" role="main" aria-label="Login form">
+    <h2>AI Resume Screener</h2>
+
+    <input id="email" type="email" placeholder="Email" autocomplete="username" required aria-required="true" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" required aria-required="true" />
+
+    <select id="role" aria-label="Select user role for new users">
+      <option value="" disabled selected>Select role (if new user)</option>
+      <option value="applicant">Applicant</option>
+      <option value="hr">HR</option>
+    </select>
+    <div class="role-note">* Only select role if you are a new user.</div>
+
+    <button onclick="login()" aria-label="Login to your account">Login</button>
+
+    <div class="bg-circle circle1"></div>
+    <div class="bg-circle circle2"></div>
+    <div class="bg-circle circle3"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

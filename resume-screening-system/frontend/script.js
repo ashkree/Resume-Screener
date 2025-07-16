@@ -1,8 +1,9 @@
-const BASE_URL = "https://irsas.onrender.com"; // no trailing slash
+const BASE_URL = "https://irsas.onrender.com"; // Your Render backend URL without trailing slash
 
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
 
   if (!email || !password) {
     alert("Please enter email and password");
@@ -12,6 +13,7 @@ function login() {
   const form = new FormData();
   form.append("email", email);
   form.append("password", password);
+  if(role) form.append("role", role);
 
   fetch(BASE_URL + "/login", { method: "POST", body: form })
     .then(res => {
@@ -98,7 +100,7 @@ if (window.location.pathname.includes("hr.html")) {
       })
       .then(applicants => {
         const ul = document.getElementById("applicants");
-        ul.innerHTML = ""; // clear existing list
+        ul.innerHTML = "";
         applicants.forEach(email => {
           const li = document.createElement("li");
           li.textContent = email;
