@@ -14,7 +14,7 @@ init_db()
 # Allow frontend (Netlify) to access backend (Render) via CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://irsas.netlify.app"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
