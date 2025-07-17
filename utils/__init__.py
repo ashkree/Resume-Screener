@@ -5,6 +5,7 @@ from .ModelTrainer import ModelTrainer
 from .ModelEvaluator import ModelEvaluator
 from .ExperimentManger import ExperimentManager, Experiment
 from .ModelVisualiser import ModelVisualiser
+from .SkillNERPreprocessor import SkillNERPreprocessor, PrecomputedSkillNERTransformer
 
 __all__ = [
     "ModelTrainer",
@@ -15,5 +16,7 @@ __all__ = [
     "TextPreprocessor",
     "ExperimentManager",
     "Experiment",
-    "ModelVisualiser"
+    "ModelVisualiser",
+    "SkillNERPreprocessor", 
+    "PrecomputedSkillNERTransformer"
 ]

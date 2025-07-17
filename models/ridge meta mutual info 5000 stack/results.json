@@ -1,0 +1,52 @@
+{
+    "accuracy": 0.646441073512252,
+    "confusion_matrix": "[[563 294]\n [312 545]]",
+    "classification_report": {
+        "Fit": {
+            "precision": 0.6434285714285715,
+            "recall": 0.6569428238039673,
+            "f1-score": 0.6501154734411085,
+            "support": 857.0
+        },
+        "Not Fit": {
+            "precision": 0.6495828367103695,
+            "recall": 0.6359393232205367,
+            "f1-score": 0.6426886792452831,
+            "support": 857.0
+        },
+        "accuracy": 0.646441073512252,
+        "macro avg": {
+            "precision": 0.6465057040694705,
+            "recall": 0.646441073512252,
+            "f1-score": 0.6464020763431958,
+            "support": 1714.0
+        },
+        "weighted avg": {
+            "precision": 0.6465057040694704,
+            "recall": 0.646441073512252,
+            "f1-score": 0.6464020763431959,
+            "support": 1714.0
+        }
+    },
+    "per_class_precision": "[0.64342857 0.64958284]",
+    "per_class_recall": "[0.65694282 0.63593932]",
+    "per_class_f1": "[0.65011547 0.64268868]",
+    "per_class_support": "[857 857]",
+    "macro_precision": 0.6465057040694705,
+    "macro_recall": 0.646441073512252,
+    "macro_f1": 0.6464020763431958,
+    "micro_precision": 0.646441073512252,
+    "micro_recall": 0.646441073512252,
+    "micro_f1": 0.646441073512252,
+    "weighted_precision": 0.6465057040694704,
+    "weighted_recall": 0.646441073512252,
+    "weighted_f1": 0.6464020763431959,
+    "y_true": "674     1\n75      1\n1617    0\n763     1\n1483    0\n       ..\n145     1\n585     1\n208     1\n623     1\n73      1\nName: label, Length: 1714, dtype: int64",
+    "y_pred": "[0 1 0 ... 0 0 1]",
+    "class_labels": [
+        "Fit",
+        "Not Fit"
+    ],
+    "num_samples": 1714,
+    "num_classes": 2
+}

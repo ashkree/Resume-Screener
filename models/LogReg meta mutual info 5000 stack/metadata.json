@@ -1,0 +1,5 @@
+{
+    "name": "LogReg meta mutual info 5000 stack",
+    "description": "Stack ensemble classifier with LogReg classifier and mutual info 5000",
+    "timestamp": "2025-07-14T22:42:38.673587"
+}

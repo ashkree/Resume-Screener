@@ -1,0 +1,5 @@
+{
+    "name": "Baseline optimization EBM chi2 stack",
+    "description": "No hyperparameter tuning yet but parameters are changed from defaults",
+    "timestamp": "2025-07-16T02:22:33.214350"
+}

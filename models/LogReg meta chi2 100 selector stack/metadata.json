@@ -1,0 +1,5 @@
+{
+    "name": "LogReg meta chi2 100 selector stack",
+    "description": "Stack ensemble classifier with LogReg classifier and chi2 100",
+    "timestamp": "2025-07-14T20:13:52.117786"
+}
