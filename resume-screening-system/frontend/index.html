@@ -18,7 +18,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #000; /* Black text for readability */
+    color: #000; 
   }
   .login-container {
     background: rgba(255, 255, 255, 0.75);
@@ -86,46 +86,6 @@
     margin-bottom: 20px;
   }
 
-  /* Soft floating circles in background for subtle visual interest */
-  .bg-circle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
-    animation: float 7s ease-in-out infinite alternate;
-    z-index: 0;
-  }
-  .circle1 {
-    width: 120px;
-    height: 120px;
-    top: -50px;
-    right: -50px;
-    animation-delay: 0s;
-  }
-  .circle2 {
-    width: 80px;
-    height: 80px;
-    bottom: -40px;
-    left: -40px;
-    animation-delay: 3s;
-  }
-  .circle3 {
-    width: 100px;
-    height: 100px;
-    top: 20%;
-    left: 10%;
-    animation-delay: 5s;
-  }
-  @keyframes float {
-    0% {
-      transform: translateY(0) translateX(0);
-      opacity: 0.4;
-    }
-    100% {
-      transform: translateY(-20px) translateX(10px);
-      opacity: 0.6;
-    }
-  }
-
   /* Responsive adjustments */
   @media(max-width: 420px) {
     .login-container {
@@ -150,10 +110,6 @@
     <div class="role-note">* Only select role if you are a new user.</div>
 
     <button onclick="login()" aria-label="Login to your account">Login</button>
-
-    <div class="bg-circle circle1"></div>
-    <div class="bg-circle circle2"></div>
-    <div class="bg-circle circle3"></div>
   </div>
 
   <script src="script.js"></script>

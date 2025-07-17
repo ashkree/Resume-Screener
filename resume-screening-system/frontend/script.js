@@ -1,6 +1,5 @@
 const BASE_URL = "https://irsas.onrender.com"; 
 
-// Handles user login, storing token and role in localStorage
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
