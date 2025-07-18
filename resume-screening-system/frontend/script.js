@@ -41,7 +41,7 @@ function uploadCV() {
     return;
   }
   
-  // Accept only pdf or docx files as per updated frontend
+  // Accept only pdf or docx files 
   const allowedTypes = [
     "application/pdf", 
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
