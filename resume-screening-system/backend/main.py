@@ -57,11 +57,11 @@ async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
 
     # Parse CV text from uploaded file
     parsed_text = parse_cv(path)
-    # Save the parsed text and filename to DB
-    save_review(user["email"], parsed_text, review, safe_filename)
-
     # Generate AI review based on parsed text
     review = process_resume(parsed_text)
+    # Save the parsed text, review, and filename to DB
+    save_review(user["email"], parsed_text, review, safe_filename)
+
 
     return {"review": review}
     
