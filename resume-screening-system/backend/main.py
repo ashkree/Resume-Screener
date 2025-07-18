@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, Form, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from auth import verify_user, create_token, decode_token, create_user
 from database import init_db, save_review, get_review, get_all_users, get_user
-from ml_model import process_resume
+from ml_model import parse_resume, process_resume
 import os
 
 # Initialize FastAPI app
@@ -36,7 +36,7 @@ def login(email: str = Form(...), password: str = Form(...), role: str = Form(No
     token = create_token({"email": email, "role": role})
     return {"token": token, "role": role}
 
-# Upload CV endpoint (Applicant role only): Accepts and saves file, then generates review
+# Upload CV endpoint (Applicant role only): Accepts and saves file, parses and reviews it
 @app.post("/upload")
 async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
     try:
@@ -50,8 +50,15 @@ async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
     with open(path, "wb") as f:
         f.write(contents)
 
-    review = process_resume(path)
-    save_review(user["email"], review, file.filename)
+    # Step 1: Extract raw text from resume
+    parsed_text = parse_resume(path)
+
+    # Step 2: Feed parsed text into ML model to get review
+    review = process_resume(parsed_text)
+
+    # Step 3: Store filename + parsed text + review
+    save_review(user["email"], parsed_text, review, file.filename)
+
     return {"review": review}
 
 # Endpoint for applicants to retrieve their own review

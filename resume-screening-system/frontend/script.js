@@ -1,5 +1,6 @@
 const BASE_URL = "https://irsas.onrender.com"; 
 
+// Login logic for both existing and new users
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -23,7 +24,6 @@ function login() {
     .then(data => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
-      // Redirect user to appropriate dashboard
       if (data.role === "applicant") location.href = "applicant.html";
       else location.href = "hr.html";
     })
@@ -33,7 +33,7 @@ function login() {
     });
 }
 
-// Uploads CV file for applicant, displays AI review
+// Upload CV, which is parsed and passed into the ML model for review
 function uploadCV() {
   const file = document.getElementById("cv").files[0];
   if (!file) {
@@ -45,6 +45,7 @@ function uploadCV() {
   form.append("file", file);
   form.append("token", localStorage.getItem("token"));
 
+  // File gets parsed (textract), parsed text goes to ML model, review is stored
   fetch(BASE_URL + "/upload", { method: "POST", body: form })
     .then(res => {
       if (!res.ok) {
@@ -53,6 +54,7 @@ function uploadCV() {
       return res.json();
     })
     .then(data => {
+      // Shows the final ML-based review (not the raw parsed text)
       document.getElementById("result").innerText = data.review;
     })
     .catch(err => {
@@ -61,7 +63,7 @@ function uploadCV() {
     });
 }
 
-// Fetch and display the applicant's own latest AI review
+// Retrieves latest AI review for applicant
 function getReview() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -85,8 +87,7 @@ function getReview() {
     });
 }
 
-
-// On HR dashboard page: fetch all applicants and setup click handlers to load their reviews
+// HR dashboard: show list of applicants, click to view their reviews
 if (window.location.pathname.includes("hr.html")) {
   const token = localStorage.getItem("token");
   if (!token) {

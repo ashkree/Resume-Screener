@@ -5,3 +5,5 @@ python-jose
 passlib[bcrypt]
 databases
 psycopg2-binary
+textract
+

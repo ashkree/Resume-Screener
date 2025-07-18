@@ -22,12 +22,13 @@ def init_db():
         )
     """)
 
-    # Reviews table: stores resume review + filename, linked to a registered user
+    # Reviews table: stores filename, parsed resume text, and final AI review
     cur.execute("""
         CREATE TABLE IF NOT EXISTS reviews (
             email TEXT PRIMARY KEY,
             review TEXT,
             filename TEXT,
+            parsed_text TEXT,
             FOREIGN KEY (email) REFERENCES users(email)
         )
     """)
@@ -59,16 +60,19 @@ def add_user(email, hashed_password, role):
     cur.close()
     conn.close()
 
-# Save or update a review and the uploaded filename
-def save_review(email, review, filename):
+# Save or update review with filename + parsed text
+def save_review(email, parsed_text, review, filename):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO reviews (email, review, filename)
-        VALUES (%s, %s, %s)
+        INSERT INTO reviews (email, parsed_text, review, filename)
+        VALUES (%s, %s, %s, %s)
         ON CONFLICT (email)
-        DO UPDATE SET review = EXCLUDED.review, filename = EXCLUDED.filename
-    """, (email, review, filename))
+        DO UPDATE SET 
+            parsed_text = EXCLUDED.parsed_text,
+            review = EXCLUDED.review,
+            filename = EXCLUDED.filename
+    """, (email, parsed_text, review, filename))
     conn.commit()
     cur.close()
     conn.close()
