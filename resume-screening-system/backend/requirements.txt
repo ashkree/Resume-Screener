@@ -1,4 +1,3 @@
-pip<24.1
 fastapi
 uvicorn[standard]
 python-multipart
@@ -6,5 +5,5 @@ python-jose
 passlib[bcrypt]
 databases
 psycopg2-binary
-textract
-
+pdfminer.six
+python-docx

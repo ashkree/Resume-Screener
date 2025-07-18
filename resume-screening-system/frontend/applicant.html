@@ -104,7 +104,8 @@
 <body>
   <header>Applicant Dashboard</header>
   <main role="main" aria-label="Upload your CV and get AI review">
-    <input type="file" id="cv" accept=".pdf,.doc,.docx" aria-label="Upload your CV file" />
+    <!-- Only accept PDF and DOCX formats -->
+    <input type="file" id="cv" accept=".pdf,.docx" aria-label="Upload your CV file (PDF or DOCX only)" />
     <button onclick="uploadCV()" aria-label="Upload CV and get AI review">Upload CV</button>
     <button onclick="getReview()" aria-label="Check your latest AI review">Check Review</button>
     <p id="result" aria-live="polite" aria-atomic="true">Your AI review will appear here...</p>

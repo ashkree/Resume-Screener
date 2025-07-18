@@ -1,6 +1,5 @@
 const BASE_URL = "https://irsas.onrender.com"; 
 
-// Login logic for both existing and new users
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -24,6 +23,7 @@ function login() {
     .then(data => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
+      // Redirect user to appropriate dashboard
       if (data.role === "applicant") location.href = "applicant.html";
       else location.href = "hr.html";
     })
@@ -33,11 +33,21 @@ function login() {
     });
 }
 
-// Upload CV, which is parsed and passed into the ML model for review
+// Uploads CV file for applicant, displays AI review
 function uploadCV() {
   const file = document.getElementById("cv").files[0];
   if (!file) {
     alert("Please select a file to upload.");
+    return;
+  }
+  
+  // Accept only pdf or docx files as per updated frontend
+  const allowedTypes = [
+    "application/pdf", 
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
+  if (!allowedTypes.includes(file.type)) {
+    alert("Please upload a PDF or DOCX file only.");
     return;
   }
 
@@ -45,7 +55,6 @@ function uploadCV() {
   form.append("file", file);
   form.append("token", localStorage.getItem("token"));
 
-  // File gets parsed (textract), parsed text goes to ML model, review is stored
   fetch(BASE_URL + "/upload", { method: "POST", body: form })
     .then(res => {
       if (!res.ok) {
@@ -54,7 +63,6 @@ function uploadCV() {
       return res.json();
     })
     .then(data => {
-      // Shows the final ML-based review (not the raw parsed text)
       document.getElementById("result").innerText = data.review;
     })
     .catch(err => {
@@ -63,7 +71,7 @@ function uploadCV() {
     });
 }
 
-// Retrieves latest AI review for applicant
+// Fetch and display the applicant's own latest AI review
 function getReview() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -87,7 +95,7 @@ function getReview() {
     });
 }
 
-// HR dashboard: show list of applicants, click to view their reviews
+// On HR dashboard page: fetch all applicants and setup click handlers to load their reviews
 if (window.location.pathname.includes("hr.html")) {
   const token = localStorage.getItem("token");
   if (!token) {

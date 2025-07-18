@@ -2,16 +2,15 @@ from fastapi import FastAPI, UploadFile, Form, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from auth import verify_user, create_token, decode_token, create_user
 from database import init_db, save_review, get_review, get_all_users, get_user
-from ml_model import parse_resume, process_resume
+from ml_model import process_resume
+from parse_cv import parse_cv
 import os
+import pathlib
+import time
 
-# Initialize FastAPI app
 app = FastAPI()
-
-# Initialize the database connection and tables (we used NeonDB for our system)
 init_db()
 
-# Allow frontend (Netlify) to access backend (Render) via CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Login endpoint: Handles both existing (cross-checked with our database) and first-time users
 @app.post("/login")
 def login(email: str = Form(...), password: str = Form(...), role: str = Form(None)):
     existing_user = get_user(email)
@@ -36,7 +34,6 @@ def login(email: str = Form(...), password: str = Form(...), role: str = Form(No
     token = create_token({"email": email, "role": role})
     return {"token": token, "role": role}
 
-# Upload CV endpoint (Applicant role only): Accepts and saves file, parses and reviews it
 @app.post("/upload")
 async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
     try:
@@ -46,21 +43,28 @@ async def upload_cv(token: str = Form(...), file: UploadFile = File(...)):
 
     contents = await file.read()
     os.makedirs("uploads", exist_ok=True)
-    path = f"uploads/{file.filename}"
+
+    # Sanitize filename to prevent directory traversal
+    original_filename = pathlib.Path(file.filename).name
+
+    # Prefix filename with timestamp and user email to avoid overwrite
+    timestamp = int(time.time())
+    safe_filename = f"{user['email'].replace('@','_at_')}_{timestamp}_{original_filename}"
+    path = f"uploads/{safe_filename}"
+
     with open(path, "wb") as f:
         f.write(contents)
 
-    # Step 1: Extract raw text from resume
-    parsed_text = parse_resume(path)
+    # Parse CV text from uploaded file
+    parsed_text = parse_cv(path)
+    # Save the parsed text and filename to DB
+    save_review(user["email"], parsed_text, safe_filename)
 
-    # Step 2: Feed parsed text into ML model to get review
+    # Generate AI review based on parsed text
     review = process_resume(parsed_text)
 
-    # Step 3: Store filename + parsed text + review
-    save_review(user["email"], parsed_text, review, file.filename)
-
     return {"review": review}
-
+    
 # Endpoint for applicants to retrieve their own review
 @app.get("/review")
 def get_my_review(token: str):
